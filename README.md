@@ -3,7 +3,7 @@
 This is a chatbot application built with Django for the RentTech electronic device rental platform.  
 The chatbot helps users with rental processes, payment guidance, and general inquiries in Arabic and English.
 
-<img src="images/chatbot.png" alt="Chatbot Image" />
+![Chatbot Screenshot](images/chatbot.png)
 
 
 ## Features
