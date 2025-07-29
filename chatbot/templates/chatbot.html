@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chatbot</title>
+  <link rel="shortcut icon" href="logo.jpg" type="image/x-icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0e6d2, #d7c8a6);
+      color: #3c3c3c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .back-button a {
+      background-color: #8b7d5c;
+      color: #fff;
+      padding: 10px 18px;
+      text-decoration: none;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 14px;
+      border: 2px solid #8b7d5c;
+      transition: all 0.3s ease;
+      display: inline-block;
+      user-select: none;
+    }
+
+    .back-button a:hover {
+      background-color: #d7c8a6;
+      color: #5a4a20;
+      border-color: #d7c8a6;
+      transform: translateY(-3px);
+    }
+
+    .chat-container {
+      background-color: #fff8f0;
+      max-width: 600px;
+      width: 100%;
+      padding: 30px 35px 40px 35px;
+      border-radius: 25px;
+      box-shadow: 0 15px 40px rgba(139, 125, 92, 0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #7d6f43;
+      position: relative;
+      letter-spacing: 1.3px;
+      user-select: none;
+    }
+
+    .chat-title::after {
+      content: '';
+      position: absolute;
+      height: 5px;
+      width: 70px;
+      background: #a69b6b;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 6px;
+    }
+
+    .chat-box {
+      height: 380px;
+      overflow-y: auto;
+      border: 1px solid #d7c8a6;
+      padding: 20px;
+      border-radius: 20px;
+      background-color: #fbf6ef;
+      margin-bottom: 25px;
+      scroll-behavior: smooth;
+    }
+
+    .user-msg,
+    .bot-msg {
+      padding: 14px 22px;
+      border-radius: 20px;
+      margin-bottom: 15px;
+      max-width: 70%;
+      word-wrap: break-word;
+      font-size: 16px;
+      line-height: 1.4;
+      transition: all 0.3s ease;
+    }
+
+    .user-msg {
+      background: #c7b784;
+      color: #3c3c3c;
+      margin-left: auto;
+      text-align: right;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bot-msg {
+      background: #e6ddbb;
+      color: #4a4a4a;
+      margin-right: auto;
+      text-align: left;
+      border-bottom-left-radius: 2px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    #user-input {
+      flex: 1;
+      height: 48px;
+      padding: 12px 20px;
+      border-radius: 25px;
+      border: 2px solid #a69b6b;
+      font-size: 16px;
+      background-color: #faf5e6;
+      color: #3c3c3c;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    #user-input::placeholder {
+      color: #a69b6b;
+      font-weight: 500;
+    }
+
+    #user-input:focus {
+      border-color: #7d6f43;
+    }
+
+    button {
+      background: #a69b6b;
+      border: none;
+      color: #fff;
+      padding: 0 28px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    button:hover {
+      background: #7d6f43;
+      color: #fff;
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 600px) {
+      .chat-container {
+        padding: 25px 20px 30px 20px;
+      }
+
+      .chat-box {
+        height: 320px;
+      }
+
+      #user-input {
+        font-size: 14px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 0 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="back-button">
+    <a href="{% url 'chatbot_home' %}">⬅ Back to Home</a>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-title">Chatbot</div>
+    <div class="chat-box" id="chat-box">
+      <div class="bot-msg">Hello! How can I help you today?</div>
+    </div>
+    <form id="chat-form">
+      <div class="input-group">
+        <input type="text" id="user-input" placeholder="Type your message..." required />
+        <button type="submit">Send</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    let conversationId = null;
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      appendMessage('user', message);
+      userInput.value = '';
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message,
+            conversation_id: conversationId
+          })
+        });
+
+        const data = await response.json();
+        if (data.response) {
+          appendTypingMessage('bot', data.response);
+        }
+        if (data.conversation_id) {
+          conversationId = data.conversation_id;
+        }
+      } catch (error) {
+        appendMessage('bot', 'Sorry, something went wrong.');
+      }
+    });
+
+    function appendMessage(sender, message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add(sender === 'user' ? 'user-msg' : 'bot-msg');
+      messageDiv.innerText = message;
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendTypingMessage(sender, fullMessage, speed = 25) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add(sender === 'user' ? 'user-msg' : 'bot-msg');
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      let i = 0;
+      function type() {
+        if (i < fullMessage.length) {
+          messageDiv.innerHTML += fullMessage.charAt(i);
+          i++;
+          chatBox.scrollTop = chatBox.scrollHeight;
+          setTimeout(type, speed);
+        }
+      }
+      type();
+    }
+  </script>
+
+</body>
+</html>
+
+
